@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import {
   BotIcon,
@@ -51,22 +52,12 @@ const items = [
   },
 ];
 
-const projects = [
-  {
-    name: "Project 1",
-  },
-  {
-    name: "Project 2",
-  },
-  {
-    name: "Project 3",
-  },
-];
-
 const AppSidebar = () => {
   const pathname = usePathname();
 
   const { open } = useSidebar();
+
+  const { projects, projectId, setProjectId } = useProject();
 
   return (
     <Sidebar collapsible="icon" variant="floating">
@@ -114,16 +105,16 @@ const AppSidebar = () => {
 
           <SidebarGroupContent>
             <SidebarMenu>
-              {projects.map((project) => {
+              {projects?.map((project) => {
                 return (
                   <SidebarMenuItem key={project.name}>
-                    <SidebarMenuButton asChild>
-                      <div>
+                    <SidebarMenuButton className="cursor-pointer" asChild>
+                      <div onClick={() => setProjectId(project.id)}>
                         <div
                           className={cn(
                             "flex size-6 items-center justify-center rounded-sm border bg-white text-sm text-primary",
                             {
-                              "bg-primary text-white": true,
+                              "bg-primary text-white": project.id === projectId,
                             },
                           )}
                         >
@@ -142,7 +133,7 @@ const AppSidebar = () => {
               {open && (
                 <SidebarMenuItem>
                   <Link href={"/create"}>
-                    <Button size={"sm"} variant={"default"} className="w-fit">
+                    <Button size={"sm"} variant={"default"} className="w-full">
                       <PlusCircleIcon /> Create Project
                     </Button>
                   </Link>
