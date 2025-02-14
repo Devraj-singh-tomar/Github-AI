@@ -86,7 +86,7 @@ const MeetingCard = () => {
           </p>
         </div>
       ) : (
-        <>
+        <div className="flex flex-col items-center justify-center p-4">
           <MonitorIcon className="h-10 w-10 animate-pulse" />
 
           <h3 className="mt-2 text-sm font-semibold text-gray-900">
@@ -104,7 +104,7 @@ const MeetingCard = () => {
               <input className="hidden" {...getInputProps()} />
             </Button>
           </div>
-        </>
+        </div>
       )}
     </Card>
   );
