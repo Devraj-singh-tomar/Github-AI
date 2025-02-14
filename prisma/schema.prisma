@@ -46,6 +46,7 @@ model Project {
     SourceCodeEmbedding SourceCodeEmbedding[]
 
     savedQuestions Question[]
+    meetings       Meeting[]
 }
 
 model UserToProject {
@@ -108,4 +109,41 @@ model Commit {
 
     // AI summary
     summary String
+}
+
+model Meeting {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    name String
+
+    meetingUrl String //firebase storage URL
+
+    projectId String
+    project   Project @relation(fields: [projectId], references: [id])
+
+    status MeetingStatus @default(PROCESSING)
+
+    issues Issue[]
+}
+
+enum MeetingStatus {
+    PROCESSING
+    COMPLETED
+}
+
+model Issue {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    start    String
+    end      String
+    gist     String
+    headline String
+    summary  String
+
+    meetingId String
+    Meeting   Meeting? @relation(fields: [meetingId], references: [id])
 }

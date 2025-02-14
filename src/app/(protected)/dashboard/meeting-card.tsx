@@ -7,10 +7,19 @@ import { MonitorIcon, UploadCloudIcon } from "lucide-react";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import { api } from "@/trpc/react";
+import useProject from "@/hooks/use-project";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const MeetingCard = () => {
+  const { project } = useProject();
+  const router = useRouter();
+
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+
+  const uploadMeeting = api.project.uploadMeeting.useMutation();
 
   const { getInputProps, getRootProps } = useDropzone({
     accept: {
@@ -20,15 +29,35 @@ const MeetingCard = () => {
     maxFiles: 50_000_000,
 
     onDrop: async (acceptedFiles) => {
+      if (!project) return;
+
       setIsUploading(true);
-
-      console.log(acceptedFiles);
-
+      // console.log(acceptedFiles);
       const file = acceptedFiles[0];
 
-      const downloadURL = await uploadFile(file as File, setProgress);
+      if (!file) return;
 
-      window.alert(downloadURL);
+      const downloadURL = (await uploadFile(
+        file as File,
+        setProgress,
+      )) as string;
+
+      uploadMeeting.mutate(
+        {
+          projectId: project.id,
+          meetingUrl: downloadURL,
+          name: file?.name,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Meeting uploaded successfully");
+            router.push("/meetings");
+          },
+          onError: () => {
+            toast.error("Failed to upload");
+          },
+        },
+      );
 
       setIsUploading(false);
     },
