@@ -131,7 +131,7 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      return ctx.db.meeting.findMany({
+      return await ctx.db.meeting.findMany({
         where: {
           projectId: input.projectId,
         },
@@ -148,7 +148,7 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.meeting.delete({
+      return await ctx.db.meeting.delete({
         where: {
           id: input.meetingId,
         },
@@ -162,12 +162,29 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      return ctx.db.meeting.findUnique({
+      return await ctx.db.meeting.findUnique({
         where: {
           id: input.meetingId,
         },
         include: {
           issues: true,
+        },
+      });
+    }),
+
+  archiveProject: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.project.update({
+        where: {
+          id: input.projectId,
+        },
+        data: {
+          deletedAt: new Date(),
         },
       });
     }),
