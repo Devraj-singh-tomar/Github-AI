@@ -154,4 +154,21 @@ export const projectRouter = createTRPCRouter({
         },
       });
     }),
+
+  getMeetingById: protectedProcedure
+    .input(
+      z.object({
+        meetingId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.db.meeting.findUnique({
+        where: {
+          id: input.meetingId,
+        },
+        include: {
+          issues: true,
+        },
+      });
+    }),
 });
