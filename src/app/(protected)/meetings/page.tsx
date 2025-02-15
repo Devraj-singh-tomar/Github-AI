@@ -4,10 +4,12 @@ import useProject from "@/hooks/use-project";
 import { api } from "@/trpc/react";
 import React from "react";
 import MeetingCard from "../dashboard/meeting-card";
-import { Loader2Icon, LoaderIcon } from "lucide-react";
+import { Loader2Icon, LoaderIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import useRefetch from "@/hooks/use-refetch";
 
 const MeetingsPage = () => {
   const { projectId } = useProject();
@@ -17,9 +19,13 @@ const MeetingsPage = () => {
       projectId,
     },
     {
-      refetchInterval: 4000,
+      refetchInterval: 5000,
     },
   );
+
+  const deleteMeeting = api.project.deleteMeeting.useMutation();
+
+  const refetch = useRefetch();
 
   return (
     <>
@@ -28,7 +34,7 @@ const MeetingsPage = () => {
       <h1 className="text-xl font-semibold">Meetings</h1>
 
       {meetings && meetings.length === 0 && (
-        <div className="">No meeting found</div>
+        <div className="text-center">No meetings found</div>
       )}
 
       {isLoading && (
@@ -37,7 +43,7 @@ const MeetingsPage = () => {
         </div>
       )}
 
-      <ul className="divide-y divide-gray-800">
+      <ul className="divide-y divide-gray-400">
         {meetings?.map((meeting) => (
           <li
             key={meeting.id}
@@ -60,6 +66,10 @@ const MeetingsPage = () => {
                       <LoaderIcon className="ml-1 size-4 animate-spin" />
                     </Badge>
                   )}
+
+                  {meeting.status === "COMPLETED" && (
+                    <Badge className="bg-green-600/95">Completed</Badge>
+                  )}
                 </div>
               </div>
 
@@ -74,8 +84,31 @@ const MeetingsPage = () => {
 
             <div className="flex flex-none items-center gap-x-4">
               <Link href={`/meetings/${meeting.id}`}>
-                <Button variant={"default"}>View meeting</Button>
+                <Button size={"sm"} variant={"default"}>
+                  View meeting
+                </Button>
               </Link>
+
+              <Button
+                size={"sm"}
+                title="delete meeting"
+                variant={"destructive"}
+                disabled={deleteMeeting.isPending}
+                onClick={() =>
+                  deleteMeeting.mutate(
+                    { meetingId: meeting.id },
+                    {
+                      onSuccess: () => {
+                        toast.success("Meeting deleted successfully");
+
+                        refetch();
+                      },
+                    },
+                  )
+                }
+              >
+                <Trash2Icon className="" />
+              </Button>
             </div>
           </li>
         ))}
