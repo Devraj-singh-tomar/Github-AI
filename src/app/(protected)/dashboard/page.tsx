@@ -9,6 +9,7 @@ import AskQuestionCard from "./ask-question-card";
 import MeetingCard from "./meeting-card";
 import ArchiveButton from "./archive-button";
 import InviteButton from "./invite-button";
+import TeamMembers from "./team-members";
 
 const DashboardPage = () => {
   const { project } = useProject();
@@ -41,7 +42,7 @@ const DashboardPage = () => {
         <div className="h-4"></div>
 
         <div className="flex items-center gap-4">
-          TeamMember
+          <TeamMembers />
           <InviteButton />
           <ArchiveButton />
         </div>
