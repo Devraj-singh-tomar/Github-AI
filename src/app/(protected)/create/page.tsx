@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useRefetch from "@/hooks/use-refetch";
 import { api } from "@/trpc/react";
-import React from "react";
+import { InfoIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -19,30 +19,41 @@ const CreatePage = () => {
 
   const createProject = api.project.createProject.useMutation();
 
+  const checkCredits = api.project.checkCredits.useMutation();
+
+  const hasEnoughCredits = checkCredits?.data?.userCredits
+    ? checkCredits.data.fileCount <= checkCredits.data.userCredits
+    : true;
+
   const refetch = useRefetch();
 
   function onSubmit(data: FormInput) {
     // window.alert(JSON.stringify(data));
 
-    createProject.mutate(
-      {
+    if (!!checkCredits.data) {
+      createProject.mutate(
+        {
+          githubUrl: data.repoUrl,
+          name: data.projectName,
+          githubToken: data.githubToken,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Project created successfully");
+            refetch();
+            reset();
+          },
+          onError: () => {
+            toast.error("Failed to create project");
+          },
+        },
+      );
+    } else {
+      checkCredits.mutate({
         githubUrl: data.repoUrl,
-        name: data.projectName,
         githubToken: data.githubToken,
-      },
-      {
-        onSuccess: () => {
-          toast.success("Project created successfully");
-          refetch();
-          reset();
-        },
-        onError: () => {
-          toast.error("Failed to create project");
-        },
-      },
-    );
-
-    return true;
+      });
+    }
   }
 
   return (
@@ -89,14 +100,43 @@ const CreatePage = () => {
               placeholder="Github token (Optional)"
             />
 
+            {!!checkCredits.data && (
+              <>
+                <div className="mt-4 rounded-md border bg-orange-100 px-4 py-2 text-purple-800">
+                  <div className="flex items-center gap-2">
+                    <InfoIcon className="size-4" />
+
+                    <p className="text-sm">
+                      You will be charged{" "}
+                      <strong>{checkCredits.data?.fileCount}</strong> credits
+                      for this repo.
+                    </p>
+                  </div>
+
+                  <div className="text-sm">
+                    You have <strong>{checkCredits.data?.userCredits}</strong>{" "}
+                    credits remaining
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="h-4"></div>
+
+            <p className="mb-2 text-sm text-gray-500">
+              check credits and then create project
+            </p>
 
             <Button
               type="submit"
               className="w-full"
-              disabled={createProject.isPending}
+              disabled={
+                createProject.isPending ||
+                checkCredits.isPending ||
+                !hasEnoughCredits
+              }
             >
-              Create Project
+              {!!checkCredits.data ? "Create Project" : "Check credits"}
             </Button>
           </form>
         </div>
