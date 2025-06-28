@@ -60,7 +60,7 @@ const AppSidebar = () => {
   const { projects, projectId, setProjectId } = useProject();
 
   return (
-    <Sidebar collapsible="icon" variant="floating">
+    <Sidebar collapsible="icon" variant="sidebar">
       <SidebarHeader>
         <div className="flex items-center gap-2">
           <Image src={"/intelligence.png"} alt="Logo" width={40} height={40} />

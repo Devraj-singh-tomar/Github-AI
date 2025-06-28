@@ -120,7 +120,7 @@ export const indexGithubRepo = async (
       });
 
       await db.$executeRaw`
-      UPDATE "SourceCodeSummary"
+      UPDATE "SourceCodeEmbedding"
       SET "summaryEmbedding" = ${embedding.embedding}::vector
       WHERE "id" = ${sourceCodeEmbedding.id}
       `;
@@ -144,3 +144,143 @@ const generateEmbeddings = async (docs: Document[]) => {
     }),
   );
 };
+
+// =======================================================
+
+// export const loadGithubRepository = async (
+//   githubUrl: string,
+//   githubToken?: string,
+// ) => {
+//   try {
+//     console.log(`Loading repository: ${githubUrl}`);
+
+//     const loader = new GithubRepoLoader(githubUrl, {
+//       accessToken: githubToken || "",
+//       branch: "master", // Consider checking if this should be "main"
+//       ignoreFiles: [
+//         "package-lock.json",
+//         "yarn.lock",
+//         "pnpm-lock.yaml",
+//         "bun.lockb",
+//       ],
+//       recursive: true,
+//       unknown: "warn",
+//       maxConcurrency: 2, // Reduce to avoid rate limits
+//     });
+
+//     const docs = await loader.load();
+//     console.log(`Successfully loaded ${docs.length} documents`);
+
+//     // Log first few files to see what's being loaded
+//     docs.slice(0, 5).forEach((doc, index) => {
+//       console.log(`File ${index + 1}: ${doc.metadata?.source}`);
+//     });
+
+//     return docs;
+//   } catch (error) {
+//     console.error("Error in loadGithubRepository:", error);
+//     throw error;
+//   }
+// };
+
+// export const indexGithubRepo = async (
+//   projectId: string,
+//   githubUrl: string,
+//   githubToken?: string,
+// ) => {
+//   try {
+//     const docs = await loadGithubRepository(githubUrl, githubToken);
+//     console.log(`Repository loaded with ${docs.length} files`);
+
+//     if (docs.length === 0) {
+//       console.warn("No documents were loaded from the repository");
+//       return;
+//     }
+
+//     const allEmbeddings = await generateEmbeddings(docs);
+//     console.log(`Generated ${allEmbeddings.length} embeddings`);
+
+//     const results = await Promise.allSettled(
+//       allEmbeddings.map(async (embedding, index) => {
+//         console.log(`Saving to DB: ${index + 1} of ${allEmbeddings.length}`);
+
+//         if (!embedding) {
+//           console.warn(`Skipping null embedding at index ${index}`);
+//           return;
+//         }
+
+//         try {
+//           const sourceCodeEmbedding = await db.sourceCodeEmbedding.create({
+//             data: {
+//               summary: embedding.summary,
+//               sourceCode: embedding.sourceCode,
+//               fileName: embedding.fileName,
+//               projectId,
+//             },
+//           });
+
+//           await db.$executeRaw`
+//             UPDATE "SourceCodeEmbedding"
+//             SET "summaryEmbedding" = ${embedding.embedding}::vector
+//             WHERE "id" = ${sourceCodeEmbedding.id}
+//           `;
+
+//           console.log(`Successfully saved: ${embedding.fileName}`);
+//         } catch (dbError) {
+//           console.error(`Database error for ${embedding.fileName}:`, dbError);
+//           throw dbError;
+//         }
+//       }),
+//     );
+
+//     const successful = results.filter((r) => r.status === "fulfilled").length;
+//     const failed = results.filter((r) => r.status === "rejected").length;
+
+//     console.log(
+//       `Database insertion complete: ${successful} successful, ${failed} failed`,
+//     );
+//   } catch (error) {
+//     console.error("Error in indexGithubRepo:", error);
+//     throw error;
+//   }
+// };
+
+// const generateEmbeddings = async (docs: Document[]) => {
+//   console.log(`Generating embeddings for ${docs.length} documents`);
+
+//   const results = await Promise.allSettled(
+//     docs.map(async (doc, index) => {
+//       try {
+//         console.log(
+//           `Processing document ${index + 1}/${docs.length}: ${doc.metadata?.source}`,
+//         );
+
+//         const summary = await summarizeCode(doc);
+//         const embedding = await generateEmbedding(summary);
+
+//         return {
+//           summary,
+//           embedding,
+//           sourceCode: doc.pageContent, // Remove JSON.parse/stringify - not needed
+//           fileName: doc.metadata.source,
+//         };
+//       } catch (error) {
+//         console.error(`Error processing document ${index + 1}:`, error);
+//         return null;
+//       }
+//     }),
+//   );
+
+//   // Filter out failed results
+//   const successfulResults = results
+//     .filter(
+//       (result): result is PromiseFulfilledResult<any> =>
+//         result.status === "fulfilled" && result.value !== null,
+//     )
+//     .map((result) => result.value);
+
+//   console.log(
+//     `Successfully processed ${successfulResults.length} out of ${docs.length} documents`,
+//   );
+//   return successfulResults;
+// };

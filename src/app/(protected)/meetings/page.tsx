@@ -19,7 +19,7 @@ const MeetingsPage = () => {
       projectId,
     },
     {
-      refetchInterval: 5000,
+      refetchInterval: 10000,
     },
   );
 

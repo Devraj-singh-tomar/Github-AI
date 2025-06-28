@@ -17,10 +17,13 @@ const SidebarLayout = ({ children }: Props) => {
           {/* <SearchBar/> */}
 
           <div className="ml-auto"></div>
+
           <UserButton />
         </div>
+
         <div className="h-4"></div>
         {/* MAIN CONTENT */}
+
         <div className="bg-sidebar- h-[calc(100vh-6rem)] overflow-y-scroll rounded-md border border-sidebar-border p-4 shadow">
           {children}
         </div>

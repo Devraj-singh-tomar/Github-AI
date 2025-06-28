@@ -26,11 +26,8 @@ const AskQuestionCard = () => {
   const saveAnswer = api.project.saveAnswer.useMutation();
 
   const [question, setQuestion] = useState("");
-
   const [open, setOpen] = useState(false);
-
   const [loading, setLoading] = useState(false);
-
   const [answer, setAnswer] = useState("");
 
   const [fileReferences, setFileReferences] = useState<
@@ -38,20 +35,20 @@ const AskQuestionCard = () => {
   >([]);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     setAnswer("");
 
     setFileReferences([]);
-
-    e.preventDefault();
 
     if (!project?.id) return;
 
     setLoading(true);
 
-    // const {output, fileRefrences} = askQuestion(question, project.id)
-    const response = await askQuestion(question, project.id); // Await the function
+    const { output, fileReferences } = await askQuestion(question, project.id);
 
-    const { fileReferences, output } = response; // Now destructure safely
+    // const response = await askQuestion(question, project.id); // Await the function
+    // const { fileReferences, output } = response; // Now destructure safely
 
     setOpen(true);
 
@@ -71,7 +68,7 @@ const AskQuestionCard = () => {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[75vw]">
+        <DialogContent className="overflow-y-scroll sm:max-w-[75vw]">
           <DialogHeader>
             <div className="flex items-center gap-4">
               <DialogTitle>

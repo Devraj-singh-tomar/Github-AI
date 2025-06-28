@@ -165,4 +165,4 @@ async function filterUnprocessedCommits(
   return unprocessedCommits;
 }
 
-await pullCommits("cm6wbih8f0000vvxvogshaifk").then(console.log);
+// await pullCommits("cm6wbih8f0000vvxvogshaifk").then(console.log);
